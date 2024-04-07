@@ -1,0 +1,98 @@
+info:
+  contact: {}
+paths:
+  /complete:
+    post:
+      consumes:
+      - application/json
+      description: Complete file upload
+      operationId: file.complete
+      parameters:
+      - description: file upload requirements
+        in: query
+        name: upload_id
+        required: true
+        type: string
+      - description: file upload requirements
+        in: query
+        name: file_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+        "201":
+          description: file saved
+          schema:
+            type: string
+        "400":
+          description: We need ID!!
+          schema:
+            type: object
+        "404":
+          description: Can not find ID
+          schema:
+            type: object
+      summary: Complete file upload
+  /upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload file
+      operationId: file.upload
+      parameters:
+      - description: file upload requirements
+        in: formData
+        name: upload_id
+        required: true
+        type: string
+      - description: file upload requirements
+        in: formData
+        name: chunk_number
+        required: true
+        type: integer
+      - description: file upload requirements
+        in: formData
+        name: total_chunks
+        required: true
+        type: integer
+      - description: file upload requirements
+        in: formData
+        name: total_file_size
+        required: true
+        type: integer
+      - description: file upload requirements
+        in: formData
+        name: file_name
+        required: true
+        type: string
+      - description: file upload requirements
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+        "201":
+          description: file saved
+          schema:
+            type: string
+        "400":
+          description: We need ID!!
+          schema:
+            type: object
+        "404":
+          description: Can not find ID
+          schema:
+            type: object
+      summary: Upload file
+swagger: "2.0"
