@@ -1,6 +1,79 @@
+definitions:
+  auth.authInput:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  models.User:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+      updatedAt:
+        type: string
+      username:
+        type: string
+    type: object
+  openai.Query:
+    properties:
+      question:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login
+      parameters:
+      - description: User
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/auth.authInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Login
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a user
+      parameters:
+      - description: User
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/auth.authInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: Create a user
+      tags:
+      - auth
   /complete:
     post:
       consumes:
@@ -38,6 +111,47 @@ paths:
           schema:
             type: object
       summary: Complete file upload
+      tags:
+      - fs
+  /qa/{videoId}:
+    post:
+      consumes:
+      - application/json
+      description: Answer a question based on the video context
+      parameters:
+      - description: Video ID
+        in: path
+        name: videoId
+        required: true
+        type: string
+      - description: Question
+        in: body
+        name: question
+        required: true
+        schema:
+          $ref: '#/definitions/openai.Query'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Answer a question based on the video context
+      tags:
+      - OpenAI
   /upload:
     post:
       consumes:
@@ -95,4 +209,6 @@ paths:
           schema:
             type: object
       summary: Upload file
+      tags:
+      - fs
 swagger: "2.0"

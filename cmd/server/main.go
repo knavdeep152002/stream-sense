@@ -6,9 +6,14 @@ import (
 	docs "github.com/knavdeep152002/stream-sense/docs"
 	"github.com/knavdeep152002/stream-sense/internal/constants"
 	streamsense "github.com/knavdeep152002/stream-sense/internal/streamsense"
+	"github.com/knavdeep152002/stream-sense/internal/utils"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
+
+func init() {
+	utils.LoadEnvs()
+}
 
 func main() {
 	r := gin.Default()
