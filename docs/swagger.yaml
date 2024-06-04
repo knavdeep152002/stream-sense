@@ -9,22 +9,65 @@ definitions:
     - password
     - username
     type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  models.Uploads:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      filename:
+        type: string
+      id:
+        type: integer
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      user_id:
+        type: integer
+      video_id:
+        type: string
+    type: object
   models.User:
     properties:
       createdAt:
         type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
       id:
         type: integer
       password:
         type: string
       updatedAt:
         type: string
+      uploads:
+        description: One to many relationship
+        items:
+          $ref: '#/definitions/models.Uploads'
+        type: array
       username:
         type: string
     type: object
-  openai.Query:
+  openai.query:
     properties:
       question:
+        type: string
+    type: object
+  room.roomResult:
+    properties:
+      room_id:
+        type: integer
+      room_link:
+        type: string
+      video_id:
         type: string
     type: object
 info:
@@ -70,7 +113,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.User'
+            type: string
       summary: Create a user
       tags:
       - auth
@@ -110,6 +153,8 @@ paths:
           description: Can not find ID
           schema:
             type: object
+      security:
+      - Bearer: []
       summary: Complete file upload
       tags:
       - fs
@@ -129,7 +174,7 @@ paths:
         name: question
         required: true
         schema:
-          $ref: '#/definitions/openai.Query'
+          $ref: '#/definitions/openai.query'
       produces:
       - application/json
       responses:
@@ -149,9 +194,51 @@ paths:
           description: Internal Server Error
           schema:
             type: string
+      security:
+      - Bearer: []
       summary: Answer a question based on the video context
       tags:
       - OpenAI
+  /room/{videoId}:
+    post:
+      consumes:
+      - application/json
+      description: Create a room
+      parameters:
+      - description: Video ID
+        in: path
+        name: videoId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/room.roomResult'
+      security:
+      - Bearer: []
+      summary: Create a room
+      tags:
+      - room
+  /rooms:
+    get:
+      consumes:
+      - application/json
+      description: Get active rooms
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/room.roomResult'
+      security:
+      - Bearer: []
+      summary: Get active rooms
+      tags:
+      - room
   /upload:
     post:
       consumes:
@@ -208,7 +295,62 @@ paths:
           description: Can not find ID
           schema:
             type: object
+      security:
+      - Bearer: []
       summary: Upload file
       tags:
       - fs
+  /uploads:
+    get:
+      consumes:
+      - application/json
+      description: Get user uploads
+      operationId: user.uploads
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Uploads'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: Get user uploads
+      tags:
+      - fs
+  /video/{roomLink}:
+    get:
+      consumes:
+      - application/json
+      description: Serve video
+      parameters:
+      - description: Video ID
+        in: path
+        name: videoId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: file
+      security:
+      - Bearer: []
+      summary: Serve video
+      tags:
+      - room
+securityDefinitions:
+  Bearer:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

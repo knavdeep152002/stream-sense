@@ -10,7 +10,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (a *Auth) createUserInDB(authInput *authInput) (user models.User, err error) {
+func (a *Auth) createUserInDB(authInput *authInput) (err error) {
 	var userFound models.User
 	a.DB.Where("username=?", authInput.Username).Find(&userFound)
 
@@ -25,7 +25,7 @@ func (a *Auth) createUserInDB(authInput *authInput) (user models.User, err error
 		return
 	}
 
-	user = models.User{
+	user := models.User{
 		Username: authInput.Username,
 		Password: string(passwordHash),
 	}

@@ -23,7 +23,7 @@ func CreateAuth(db *gorm.DB) *Auth {
 // @Accept			json
 // @Produce		json
 // @Param			user	body		authInput	true	"User"
-// @Success		200		{object}	models.User
+// @Success		200		{string}	token
 // @Router			/auth/register [post]
 func (a Auth) CreateUser(c *gin.Context) {
 	var authInput authInput
@@ -31,12 +31,17 @@ func (a Auth) CreateUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	user, err := a.createUserInDB(&authInput)
+	err := a.createUserInDB(&authInput)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": user})
+	token, err := a.getSignedToken(&authInput)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
 // @Summary		Login

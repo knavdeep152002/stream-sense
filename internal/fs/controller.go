@@ -12,6 +12,8 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/knavdeep152002/stream-sense/internal/models"
 	"github.com/knavdeep152002/stream-sense/internal/redis"
 	"github.com/knavdeep152002/stream-sense/internal/utils"
 )
@@ -45,10 +47,10 @@ func processChunk(ctx *gin.Context) error {
 
 // completeChunk rebulds the file chunks into the original full file.
 // It then stores the file on disk.
-func completeChunk(ctx *gin.Context, uploadID, filename string) error {
+func (fs *FSHandler) completeChunk(ctx *gin.Context, uploadID, filename string, vidId uuid.UUID) error {
 	uploadedChunkDir := fmt.Sprintf("%s/%s", uploadDir, uploadID)
 
-	newFile, err := os.Create(fmt.Sprintf("%s/%s", uploadsFinalDir, filename))
+	newFile, err := os.Create(fmt.Sprintf("%s/%s", uploadsFinalDir, fmt.Sprintf("%s.mp4", vidId.String())))
 	if err != nil {
 		return fmt.Errorf("failed creating file %w", err)
 	}
@@ -58,11 +60,15 @@ func completeChunk(ctx *gin.Context, uploadID, filename string) error {
 	if err != nil {
 		return fmt.Errorf("failed to rebuild file %w", err)
 	}
-
-	// redis.RedisClient.Publish(ctx, "mychannel", "hello2")
+	err = fs.saveUploadToDb(vidId, ctx.GetUint("userID"), filename)
+	if err != nil {
+		return fmt.Errorf("failed to save upload to db %w", err)
+	}
+	// send for audio processing
 	contextData := &utils.ChunkReceiver{
-		Filename:  filename,
+		Filename:  fmt.Sprintf("%s.mp4", vidId.String()),
 		UploadDir: uploadsFinalDir,
+		VideoID:   vidId.String(),
 	}
 	data, err := json.Marshal(contextData)
 	if err != nil {
@@ -72,6 +78,19 @@ func completeChunk(ctx *gin.Context, uploadID, filename string) error {
 	redis.RedisClient.Publish(ctx, "ss-audio-preprocess", data)
 
 	return nil
+}
+
+func (fs *FSHandler) saveUploadToDb(videoId uuid.UUID, userId uint, fileName string) (err error) {
+	// save the video to the db
+	video := &models.Uploads{
+		VideoId:  videoId.String(),
+		FileName: fileName,
+		UserID:   userId,
+	}
+	if err := fs.DB.Create(video).Error; err != nil {
+		return err
+	}
+	return
 }
 
 // ParseChunk parse the request body and creates our chunk struct. It expects the data to be sent in a

@@ -15,7 +15,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	err = dbConn.AutoMigrate(&models.User{})
+	err = dbConn.AutoMigrate(
+		&models.User{},
+		&models.Uploads{},
+		&models.Room{},
+	)
 	if err != nil {
 		panic(err)
 	}

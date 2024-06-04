@@ -29,6 +29,10 @@ func main() {
 	ss := streamsense.NewStreamSense()
 	ss.RegisterGroup(r)
 
+	//	@securityDefinitions.apikey	Bearer
+	//	@in							header
+	//	@name						Authorization
+	//	@description				Type "Bearer" followed by a space and JWT token.
 	r.GET(pathPrefix+"/api/v1/doc/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	r.Run(":8000")

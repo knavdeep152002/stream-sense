@@ -1,13 +1,12 @@
 package models
 
 import (
-	"time"
+	"gorm.io/gorm"
 )
 
 type User struct {
-	ID        uint   `json:"id" gorm:"primary_key"`
-	Username  string `json:"username" gorm:"unique"`
-	Password  string `json:"password"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	gorm.Model
+	Username string    `json:"username" gorm:"unique"`
+	Password string    `json:"password"`
+	Uploads  []Uploads `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;foreignKey:UserID;references:ID"` // One to many relationship
 }

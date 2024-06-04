@@ -9,24 +9,40 @@ import (
 	"github.com/knavdeep152002/stream-sense/internal/middlewares"
 	"github.com/knavdeep152002/stream-sense/internal/openai"
 	"github.com/knavdeep152002/stream-sense/internal/redis"
+	"github.com/knavdeep152002/stream-sense/internal/room"
 	"gorm.io/gorm"
 )
 
 type StreamSense struct {
-	authModule *auth.Auth
-	authCheck  *middlewares.AuthCheck
-	DB         *gorm.DB
+	*auth.Auth
+	*middlewares.AuthCheck
+	*fs.FSHandler
+	*room.RoomHandler
+	DB *gorm.DB
 }
 
 func (s *StreamSense) RegisterGroup(r *gin.Engine) {
 	pathPrefix := constants.PATH_PREFIX
 
 	ssGroup := r.Group(pathPrefix + "/api/v1")
-	ssGroup.POST("/upload", fs.UploadChunk)
-	ssGroup.POST("/complete", fs.CompleteUpload)
-	ssGroup.POST("/qa/:videoId", openai.VideoIntelligence)
-	ssGroup.POST("/auth/register", s.authModule.CreateUser)
-	ssGroup.POST("/auth/login", s.authModule.Login)
+	// auth routes
+	ssGroup.POST("/auth/register", s.CreateUser)
+	ssGroup.POST("/auth/login", s.Login)
+
+	// fs routes
+	ssGroup.POST("/upload", s.Check, s.UploadChunk)
+	ssGroup.POST("/complete", s.Check, s.CompleteUpload)
+	ssGroup.GET("/uploads", s.Check, s.GetUserUploads)
+
+	// room routes
+	ssGroup.POST("/room/:videoId", s.Check, s.CreateRoom)
+	ssGroup.GET("/rooms", s.Check, s.GetActiveRooms)
+	ssGroup.GET("/room/*roomLink", s.Check, s.JoinRoom)
+	ssGroup.GET("/serve/*roomLink", s.Check, s.ServeVideo)
+
+	// openai routes
+	ssGroup.POST("/qa/:videoId", s.Check, openai.VideoIntelligence)
+
 }
 
 func NewStreamSense() *StreamSense {
@@ -36,8 +52,10 @@ func NewStreamSense() *StreamSense {
 		panic(err)
 	}
 	return &StreamSense{
-		authModule: auth.CreateAuth(db),
-		DB:         db,
-		authCheck:  middlewares.CreateAuthCheck(db),
+		DB:          db,
+		Auth:        auth.CreateAuth(db),
+		AuthCheck:   middlewares.CreateAuthCheck(db),
+		FSHandler:   fs.CreateFSHandler(db),
+		RoomHandler: room.NewRoomHandler(db),
 	}
 }

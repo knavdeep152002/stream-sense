@@ -9,7 +9,6 @@ import (
 
 	"path/filepath"
 
-	"github.com/knavdeep152002/stream-sense/internal/ffmpeg"
 	"github.com/knavdeep152002/stream-sense/internal/utils"
 	"github.com/redis/go-redis/v9"
 )
@@ -54,15 +53,17 @@ func Observe() {
 				log.Println("Failed to unmarshal chunk")
 				continue
 			}
+			// send file to generate segments
+			go utils.GenerateSegments(filepath.Join(chunk.UploadDir, chunk.Filename), chunk.Filename, chunk.VideoID)
 			// read the content and send to ffmpeg
-			err = ffmpeg.ConvertMP4ToWav(filepath.Join(chunk.UploadDir, chunk.Filename), chunk.Filename)
+			err = utils.ConvertMP4ToWav(filepath.Join(chunk.UploadDir, chunk.Filename), chunk.Filename)
 			if err != nil {
 				log.Println("Failed to convert mp4 to wav", err)
 				continue
 			}
 
 			data := &utils.TranscribeArgs{
-				AudioPath: filepath.Join(ffmpeg.WavsDir, chunk.Filename+".wav"),
+				AudioPath: filepath.Join(utils.WavsDir, chunk.Filename+".wav"),
 				VideoId:   chunk.Filename,
 			}
 

@@ -74,7 +74,7 @@ func (a *AuthCheck) Check(c *gin.Context) {
 		return
 	}
 
-	c.Set("currentUser", user)
+	c.Set("userID", user.ID)
 
 	c.Next()
 
