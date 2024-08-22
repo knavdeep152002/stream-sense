@@ -1,0 +1,9 @@
+.env
+transcripts
+uploads
+wavs
+venv
+vosk*
+cache
+test
+vosk*
