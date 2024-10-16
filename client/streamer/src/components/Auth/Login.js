@@ -1,4 +1,4 @@
-import { Button, Flex, Input } from '@chakra-ui/react';
+import { Button, cookieStorageManager, Flex, Input } from '@chakra-ui/react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -17,12 +17,18 @@ function Login({ setToken }) {
       },
       body: JSON.stringify({ username, password }),
     });
-    const data = await response.json();
-    if (data.token) {
-      localStorage.setItem('token', data.token);
-      setToken(data.token);
+    if (response.status > 299) {
+      alert("user not found")
+    } else {
+      const data = await response.json();
+      console.log("data", data)
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        setToken(data.token);
+        document.cookie = "token=" + data.token + ";path=/;max-age=3600;";
+      }
+      navigate('/home');  
     }
-    navigate('/home');
   };
 
   return (

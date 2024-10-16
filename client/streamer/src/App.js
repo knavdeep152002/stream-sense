@@ -20,7 +20,7 @@ function App() {
           <Route path="/login" element={<Login setToken={setToken} />} />
           <Route path="/home" element={<HomePage />} />
           <Route path="/upload" element={<UploadVideo />} />
-          <Route path="/vs" element={<VideoPlayer />} />
+          <Route path="/room/:link" element={<VideoPlayer />} />
           <Route path="/*" element={<HomePage />} />
         {/* </Route> */}
       </Routes>

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, Flex, Input } from '@chakra-ui/react';
+import { Button, cookieStorageManager, Flex, Input } from '@chakra-ui/react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,7 +9,7 @@ const Register = ({setToken}) => {
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
     const handleRegister = async (e) => {
-      let host = process.env.SERVER_HOST_URL; 
+      let host = process.env.REACT_APP_SERVER_HOST_URL; 
       console.log('host', host);
       const response = await fetch(`${host}/auth/register`, {
           method: 'POST',
@@ -18,12 +18,18 @@ const Register = ({setToken}) => {
           },
           body: JSON.stringify({ username, password }),
       });
+      if (response.status > 299) {
+        alert(response.text)
+      } else {
       const data = await response.json();
-      if (data.token) {
-          localStorage.setItem('token', data.token);
-          setToken(data.token);
+        if (data.token) {
+            localStorage.setItem('token', data.token);
+            // set token in cookie as well
+            document.cookie = "token=" + data.token + ";path=/;max-age=3600;";
+            setToken(data.token);
+        }
+        navigate('/home');
       }
-      navigate('/home');
     };
 
     return (
