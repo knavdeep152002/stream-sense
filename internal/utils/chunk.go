@@ -18,6 +18,7 @@ type Chunk struct {
 type ChunkReceiver struct {
 	Filename  string
 	UploadDir string
+	VideoID  string
 }
 
 type TranscribeArgs struct {

@@ -1,3 +1,4 @@
+import os
 from pydub import AudioSegment
 import time
 from vosk import Model, KaldiRecognizer
@@ -58,4 +59,5 @@ complete_text = ' '.join(transcribed_text_list)
 with open(f"transcripts/transcribed_text-{vid_id}.txt", "w") as f:
     f.write(complete_text)
 
-print("Transcription complete. Output written to transcripts/transcribed_text-{vid_id}.txt")
+print(f"Transcription complete. Output written to transcripts/transcribed_text-{vid_id}.txt")
+os.remove(f"cache/output_audio_mono-{vid_id}.wav")
